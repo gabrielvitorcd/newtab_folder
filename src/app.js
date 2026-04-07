@@ -627,13 +627,7 @@ function promptConfig() {
       <input id="s-url" class="field-input" placeholder="https://..." type="url"/>
     </div>
   `, () => {
-    // let name = document.getElementById('s-name').value.trim();
-    // let url = document.getElementById('s-url').value.trim();
-    // if (!url) return;
-    // if (!url.startsWith('http')) url = 'https://' + url;
-    // if (!name) name = url;
-    // const site = { id: uid(), name, url };
-    // state.data.folders[folderId].sites.push(site);
+
     saveData();
     closeModal();
     renderGrid();
