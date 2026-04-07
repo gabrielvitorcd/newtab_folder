@@ -1,78 +1,142 @@
-/* ═══════════════════════════════════════════════════
-   FolderTab — app.js
-   ═══════════════════════════════════════════════════ */
-
 // ── Storage helpers ──────────────────────────────────
 const STORAGE_KEY = 'foldertab_data';
 
-function loadData() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) return JSON.parse(raw);
-  } catch (e) { }
-  return defaultData();
+async function loadData() {
+  return new Promise((resolve) => {
+    if (typeof chrome !== 'undefined' && chrome.storage) {
+      chrome.storage.sync.get([STORAGE_KEY], (result) => {
+        if (result[STORAGE_KEY]) {
+          resolve(result[STORAGE_KEY]);
+        } else {
+          resolve(defaultData());
+        }
+      });
+    } else {
+      resolve(defaultData());
+    }
+  });
 }
 
 function saveData() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state.data));
-  // Also try chrome.storage.sync if available
   if (typeof chrome !== 'undefined' && chrome.storage) {
-    chrome.storage.sync.set({ foldertab: state.data });
+    chrome.storage.sync.set({
+      [STORAGE_KEY]: state.data
+    });
   }
 }
 
 function defaultData() {
   return {
     folders: {
-      root: {
-        id: 'root',
-        name: 'Root',
-        children: ['f-work', 'f-learn'],
-        sites: [],
-        parentId: null
-      },
-      'f-work': {
-        id: 'f-work',
-        name: 'Trabalho',
-        children: ['f-devtools'],
-        sites: [
-          { id: 's1', name: 'GitHub', url: 'https://github.com' },
-          { id: 's2', name: 'Linear', url: 'https://linear.app' }
-        ],
-        parentId: 'root'
-      },
-      'f-devtools': {
-        id: 'f-devtools',
-        name: 'Dev Tools',
+      "i-i58lz9x": {
         children: [],
+        id: "i-i58lz9x",
+        name: "IA",
+        parentId: "root",
         sites: [
-          { id: 's3', name: 'MDN Docs', url: 'https://developer.mozilla.org' },
-          { id: 's4', name: 'Can I Use', url: 'https://caniuse.com' }
-        ],
-        parentId: 'f-work'
+          { id: "i-44fab1z", name: "Claude", url: "https://claude.ai/new" },
+          { id: "i-kznz8md", name: "Grok", url: "https://grok.com/" },
+          { id: "i-2echh8z", name: "ChatGPT", url: "https://chatgpt.com/" },
+          { id: "i-glep1l0", name: "Gemini", url: "https://gemini.google.com/app?hl=pt-BR" },
+          { id: "i-e2lw4gw", name: "Copilot", url: "https://github.com/copilot" }
+        ]
       },
-      'f-learn': {
-        id: 'f-learn',
-        name: 'Aprendizado',
+
+      "i-ifi124p": {
         children: [],
+        id: "i-ifi124p",
+        name: "Serviços Docker",
+        parentId: "root",
         sites: [
-          { id: 's5', name: 'YouTube', url: 'https://youtube.com' },
-          { id: 's6', name: 'Coursera', url: 'https://coursera.org' }
+          { id: "i-y34x2es", name: "Plex", url: "http://localhost:32400/web/index.html#!/" },
+          { id: "i-nrui4qe", name: "SyncThing - Obsidian", url: "http://localhost:8384/" }
+        ]
+      },
+
+      "i-ujnhhmw": {
+        children: [],
+        id: "i-ujnhhmw",
+        name: "Dev Local",
+        parentId: "root",
+        sites: [
+          { id: "i-wfccqkm", name: "Supabase", url: "http://localhost:54323/project/default" },
+          { id: "i-ial24i6", name: "Next - Dashboard", url: "http://localhost:3000/dashboard" },
+          { id: "i-anpoqbv", name: "FastAPI - Docs", url: "http://localhost:8000/docs" }
+        ]
+      },
+
+      "root": {
+        children: [
+          "i-i58lz9x",
+          "i-ujnhhmw",
+          "i-ifi124p"
         ],
-        parentId: 'root'
+        id: "root",
+        name: "Root",
+        parentId: null,
+        sites: [
+          { id: "i-3dp0um4", name: "Git Projects", url: "https://github.com/projects" },
+          { id: "i-ylr4lfo", name: "Linkedin", url: "https://www.linkedin.com/feed/" }
+        ]
       }
     }
   };
 }
 
+function exportData() {
+  const json = JSON.stringify(state.data, null, 2);
+
+  const blob = new Blob([json], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'foldertab-backup.json';
+  a.click();
+
+  URL.revokeObjectURL(url);
+}
+
+
+function importData(json) {
+  try {
+    const data = JSON.parse(json);
+
+    if (!data || typeof data !== 'object') {
+      throw new Error('JSON inválido');
+    }
+
+    state.data = data;
+    saveData();
+    renderSidebar();
+    renderGrid();
+
+  } catch (err) {
+    alert('Erro ao importar JSON');
+  }
+}
+
+
+function handleFileUpload(file) {
+  const reader = new FileReader();
+
+  reader.onload = (e) => {
+    importData(e.target.result);
+  };
+
+  reader.readAsText(file);
+}
+
+
 // ── State ────────────────────────────────────────────
 const state = {
-  data: loadData(),
+  data: null,
   currentFolderId: 'root',
   searchQuery: '',
-  dragItem: null,        // { type, id, folderId }
-  ctxTarget: null,       // { type, id, folderId }
+  dragItem: null,
+  ctxTarget: null,
   modalCallback: null,
+  selectedItems: []
 };
 
 // ── Utilities ────────────────────────────────────────
@@ -231,6 +295,7 @@ function renderBreadcrumb() {
   const bc = document.getElementById('breadcrumb');
   bc.innerHTML = '';
   const path = getFolderPath(state.currentFolderId);
+
   path.forEach((f, i) => {
     if (i > 0) {
       const sep = document.createElement('span');
@@ -240,9 +305,13 @@ function renderBreadcrumb() {
     }
     const item = document.createElement('span');
     item.className = 'bc-item' + (i === path.length - 1 ? ' current' : '');
+
+    if (f.id === 'root') {
+      item.classList.add('bc-home');
+    }
     item.textContent = f.id === 'root' ? '⌂' : f.name;
-    if (i < path.length - 1) {
-      item.addEventListener('click', () => navigateTo(f.id));
+    if (f.id === 'root') {
+      item.addEventListener('click', () => navigateTo('root'));
     }
     bc.appendChild(item);
   });
@@ -308,8 +377,12 @@ function createFolderCard(folder) {
     <div class="item-label">${escHtml(folder.name)}</div>
   `;
 
-  el.addEventListener('dblclick', () => navigateTo(folder.id));
-  el.addEventListener('click', (e) => { e.stopPropagation(); selectItem(el); });
+  el.addEventListener('click', () => navigateTo(folder.id));
+  el.addEventListener('auxclick', (event) => {
+    if (event.button === 1) {
+      openAllTabsNewWindow(folder.id);
+    }
+  });
   el.addEventListener('contextmenu', (e) => {
     e.preventDefault();
     showCtxMenu(e, { type: 'folder', id: folder.id, folderId: folder.parentId });
@@ -362,7 +435,13 @@ function createSiteCard(site, folderId) {
   `;
 
   el.addEventListener('click', (e) => { e.stopPropagation(); selectItem(el); });
-  el.addEventListener('dblclick', () => window.open(site.url, '_blank'));
+  el.addEventListener('dblclick', () => window.open(site.url, '_self'));
+  el.addEventListener('auxclick', (event) => {
+    if (event.button === 1) {
+      window.open(site.url, '_blank');
+    }
+  });
+
   el.addEventListener('contextmenu', (e) => {
     e.preventDefault();
     showCtxMenu(e, { type: 'site', id: site.id, folderId });
@@ -380,9 +459,29 @@ function createSiteCard(site, folderId) {
   return el;
 }
 
+// Seleciona um item (para abrir múltiplos)
+
+function updateSelectedUrls() {
+  const selected = document.querySelectorAll('.grid-item.selected');
+
+  // pega URL correta usando folderId + siteId
+  const urls = Array.from(selected)
+    .map(el => {
+      const folderId = el.dataset.folderId;
+      const siteId = el.dataset.siteId;
+      const folder = state.data.folders[folderId];
+      if (!folder) return null;
+      const site = folder.sites.find(s => s.id === siteId);
+      return site?.url || null;
+    })
+    .filter(Boolean);
+
+  state.selectedUrls = urls;
+}
+
 function selectItem(el) {
-  document.querySelectorAll('.grid-item.selected').forEach(e => e.classList.remove('selected'));
   el.classList.add('selected');
+  updateSelectedUrls();
 }
 
 // ── Navigate ─────────────────────────────────────────
@@ -416,8 +515,17 @@ function openAllTabs(folderId) {
   urls.forEach(url => window.open(url, '_blank'));
 }
 
+function openSelectedLinksFromState() {
+  if (state.selectedUrls.length === 0) {
+    alert('Nenhum site selecionado.');
+    return;
+  }
 
-// ── Open All Tabs ─────────────────────────────────────
+  state.selectedUrls.forEach(url => window.open(url, '_blank'));
+}
+
+
+// ── Open All Tabs New Window ─────────────────────────────────────
 function openAllTabsNewWindow(folderId) {
   const f = state.data.folders[folderId];
   if (!f) return;
@@ -462,10 +570,6 @@ function showCtxMenu(e, target) {
   if (target.type === 'folder') {
     const isRoot = target.id === 'root';
 
-    addCtxItem('🗂️ Abrir pasta', () => navigateTo(target.id));
-    addCtxItem('🚀 Abrir todas as abas', () => openAllTabs(target.id));
-    addCtxItem('🚀 Abrir todas as abas em nova janela', () => openAllTabsNewWindow(target.id));
-    addCtxSep();
     addCtxItem('✏️ Renomear', () => promptRename(target.id));
     addCtxItem('📁 Nova subpasta', () => promptNewFolder(target.id));
     addCtxItem('🌐 Novo site aqui', () => promptNewSite(target.id));
@@ -576,6 +680,51 @@ function promptNewFolder(parentId) {
   });
 }
 
+
+// função para abrir modal de importar e exportar dados (JSON)
+
+function promptConfig() {
+  openModal('Import / Export', `
+    
+    <div class="field-group">
+      <button id="btn-export" class="field-input">📤 Exportar Backup</button>
+    </div>
+
+    <div class="field-group">
+      <label>Importar JSON</label>
+      <input type="file" id="import-file" accept="application/json" />
+    </div>
+
+  `, () => {
+    closeModal();
+  });
+
+  setTimeout(() => {
+
+    // Click no EXPORTAR
+    document.getElementById('btn-export')
+      .addEventListener('click', exportData);
+
+    // IMPORTAR
+    document.getElementById('import-file')
+      .addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (file) handleFileUpload(file);
+      });
+
+  }, 50);
+}
+
+// button para abrir modal de importar e exportar dados (JSON)
+document.getElementById('btn-config').addEventListener('click', () => promptConfig());
+
+
+
+
+
+
+
+
 function promptRename(folderId) {
   const f = state.data.folders[folderId];
   if (!f || folderId === 'root') return;
@@ -684,7 +833,7 @@ function deleteSite(folderId, siteId) {
 document.getElementById('btn-add-site').addEventListener('click', () => promptNewSite(state.currentFolderId));
 document.getElementById('btn-add-subfolder').addEventListener('click', () => promptNewFolder(state.currentFolderId));
 document.getElementById('btn-new-root-folder').addEventListener('click', () => promptNewFolder('root'));
-document.getElementById('btn-open-all').addEventListener('click', () => openAllTabs(state.currentFolderId));
+document.getElementById('btn-open-all').addEventListener('click', () => openSelectedLinksFromState());
 
 // ── Drag & Drop ───────────────────────────────────────
 function showDragGhost(name) {
@@ -761,12 +910,11 @@ searchInput.addEventListener('input', () => {
   renderSearchResults(q);
 });
 
-// ⌘K shortcut
+
+// shortcut open selected tabs
 document.addEventListener('keydown', (e) => {
-  if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-    e.preventDefault();
-    searchInput.focus();
-    searchInput.select();
+  if (e.key === 'Enter') {
+    openSelectedLinksFromState()
   }
 });
 
@@ -824,19 +972,9 @@ document.getElementById('items-grid').addEventListener('click', (e) => {
 });
 
 // ── Init ──────────────────────────────────────────────
-// Try to restore from chrome.storage
-if (typeof chrome !== 'undefined' && chrome.storage) {
-  chrome.storage.sync.get('foldertab', (result) => {
-    if (result.foldertab) {
-      state.data = result.foldertab;
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state.data));
-    }
-    boot();
-  });
-} else {
-  boot();
-}
-
-function boot() {
+async function boot() {
+  state.data = await loadData();
   navigateTo('root');
 }
+
+boot();

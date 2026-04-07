@@ -1,13 +1,17 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>FolderTab</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500&family=Syne:wght@400;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="src/style.css"/>
+  <link
+    href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500&family=Syne:wght@400;600;700&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="src/style.css" />
 </head>
+
 <body>
   <div id="app">
 
@@ -16,13 +20,15 @@
       <div class="sidebar-header">
         <div class="logo">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-            <path d="M3 7C3 5.9 3.9 5 5 5H10L12 7H19C20.1 7 21 7.9 21 9V17C21 18.1 20.1 19 19 19H5C3.9 19 3 18.1 3 17V7Z" stroke="currentColor" stroke-width="1.5" fill="none"/>
+            <path
+              d="M3 7C3 5.9 3.9 5 5 5H10L12 7H19C20.1 7 21 7.9 21 9V17C21 18.1 20.1 19 19 19H5C3.9 19 3 18.1 3 17V7Z"
+              stroke="currentColor" stroke-width="1.5" fill="none" />
           </svg>
           <span>FolderTab</span>
         </div>
         <button id="btn-new-root-folder" class="icon-btn" title="Nova pasta raiz">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-            <path d="M12 5V19M5 12H19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <path d="M12 5V19M5 12H19" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
           </svg>
         </button>
       </div>
@@ -34,13 +40,22 @@
       <!-- Topbar -->
       <header id="topbar">
         <div id="breadcrumb"></div>
+
         <div id="search-wrap">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
-            <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="1.8"/>
-            <path d="M16.5 16.5L21 21" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+            <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="1.8" />
+            <path d="M16.5 16.5L21 21" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
           </svg>
-          <input id="search-input" type="text" placeholder="Buscar sites e pastas..."/>
+          <input id="search-input" type="text" placeholder="Buscar sites e pastas..." />
           <kbd>⌘K</kbd>
+        </div>
+        <div id="btn-config">
+          <button id="btn-config" class="btn-primary" title="Configurações">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+              <path
+                d="M9.405 1.05c-.413-1.04-2.397-1.04-2.81 0l-.21.53a1.464 1.464 0 0 1-1.91.81l-.52-.21c-1.04-.413-2.09.637-1.677 1.677l.21.52a1.464 1.464 0 0 1-.81 1.91l-.53.21c-1.04.413-1.04 2.397 0 2.81l.53.21a1.464 1.464 0 0 1 .81 1.91l-.21.52c-.413 1.04.637 2.09 1.677 1.677l.52-.21a1.464 1.464 0 0 1 1.91.81l.21.53c.413 1.04 2.397 1.04 2.81 0l.21-.53a1.464 1.464 0 0 1 1.91-.81l.52.21c1.04.413 2.09-.637 1.677-1.677l-.21-.52a1.464 1.464 0 0 1 .81-1.91l.53-.21c1.04-.413 1.04-2.397 0-2.81l-.53-.21a1.464 1.464 0 0 1-.81-1.91l.21-.52c.413-1.04-.637-2.09-1.677-1.677l-.52.21a1.464 1.464 0 0 1-1.91-.81l-.21-.53zM8 10.5A2.5 2.5 0 1 1 8 5a2.5 2.5 0 0 1 0 5z" />
+            </svg>
+          </button>
         </div>
         <div id="clock-wrap">
           <div id="clock"></div>
@@ -56,30 +71,35 @@
             <div class="toolbar-actions">
               <button class="btn-ghost" id="btn-open-all" title="Abrir todas as abas desta pasta">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
-                  <path d="M4 6H20M4 12H20M4 18H20" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                  <path d="M4 6H20M4 12H20M4 18H20" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
                 </svg>
                 Abrir todas
               </button>
               <button class="btn-ghost" id="btn-add-site">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
-                  <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/>
-                  <path d="M12 8V16M8 12H16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                  <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8" />
+                  <path d="M12 8V16M8 12H16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
                 </svg>
                 Novo site
               </button>
               <button class="btn-ghost" id="btn-add-subfolder">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
-                  <path d="M3 7C3 5.9 3.9 5 5 5H10L12 7H19C20.1 7 21 7.9 21 9V17C21 18.1 20.1 19 19 19H5C3.9 19 3 18.1 3 17V7Z" stroke="currentColor" stroke-width="1.5"/>
-                  <path d="M12 10V16M9 13H15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                  <path
+                    d="M3 7C3 5.9 3.9 5 5 5H10L12 7H19C20.1 7 21 7.9 21 9V17C21 18.1 20.1 19 19 19H5C3.9 19 3 18.1 3 17V7Z"
+                    stroke="currentColor" stroke-width="1.5" />
+                  <path d="M12 10V16M9 13H15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
                 </svg>
                 Nova subpasta
               </button>
             </div>
           </div>
           <div id="items-grid"></div>
+
           <div id="empty-state" style="display:none">
             <svg width="48" height="48" viewBox="0 0 24 24" fill="none" opacity="0.3">
-              <path d="M3 7C3 5.9 3.9 5 5 5H10L12 7H19C20.1 7 21 7.9 21 9V17C21 18.1 20.1 19 19 19H5C3.9 19 3 18.1 3 17V7Z" stroke="currentColor" stroke-width="1.2"/>
+              <path
+                d="M3 7C3 5.9 3.9 5 5 5H10L12 7H19C20.1 7 21 7.9 21 9V17C21 18.1 20.1 19 19 19H5C3.9 19 3 18.1 3 17V7Z"
+                stroke="currentColor" stroke-width="1.2" />
             </svg>
             <p>Pasta vazia</p>
             <span>Adicione sites ou subpastas acima</span>
@@ -119,4 +139,5 @@
 
   <script src="src/app.js"></script>
 </body>
+
 </html>
