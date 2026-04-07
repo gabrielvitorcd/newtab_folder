@@ -1,73 +1,140 @@
 // ── Storage helpers ──────────────────────────────────
 const STORAGE_KEY = 'foldertab_data';
 
-function loadData() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) return JSON.parse(raw);
-  } catch (e) { }
-  return defaultData();
+async function loadData() {
+  return new Promise((resolve) => {
+    if (typeof chrome !== 'undefined' && chrome.storage) {
+      chrome.storage.sync.get([STORAGE_KEY], (result) => {
+        if (result[STORAGE_KEY]) {
+          resolve(result[STORAGE_KEY]);
+        } else {
+          resolve(defaultData());
+        }
+      });
+    } else {
+      resolve(defaultData());
+    }
+  });
 }
 
 function saveData() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state.data));
-  // Also try chrome.storage.sync if available
   if (typeof chrome !== 'undefined' && chrome.storage) {
-    chrome.storage.sync.set({ foldertab: state.data });
+    chrome.storage.sync.set({
+      [STORAGE_KEY]: state.data
+    });
   }
 }
 
 function defaultData() {
   return {
     folders: {
-      root: {
-        id: 'root',
-        name: 'Root',
-        children: ['f-work', 'f-learn'],
-        sites: [],
-        parentId: null
-      },
-      'f-work': {
-        id: 'f-work',
-        name: 'Trabalho',
-        children: ['f-devtools'],
-        sites: [
-          { id: 's1', name: 'GitHub', url: 'https://github.com' },
-          { id: 's2', name: 'Linear', url: 'https://linear.app' }
-        ],
-        parentId: 'root'
-      },
-      'f-devtools': {
-        id: 'f-devtools',
-        name: 'Dev Tools',
+      "i-i58lz9x": {
         children: [],
+        id: "i-i58lz9x",
+        name: "IA",
+        parentId: "root",
         sites: [
-          { id: 's3', name: 'MDN Docs', url: 'https://developer.mozilla.org' },
-          { id: 's4', name: 'Can I Use', url: 'https://caniuse.com' }
-        ],
-        parentId: 'f-work'
+          { id: "i-44fab1z", name: "Claude", url: "https://claude.ai/new" },
+          { id: "i-kznz8md", name: "Grok", url: "https://grok.com/" },
+          { id: "i-2echh8z", name: "ChatGPT", url: "https://chatgpt.com/" },
+          { id: "i-glep1l0", name: "Gemini", url: "https://gemini.google.com/app?hl=pt-BR" },
+          { id: "i-e2lw4gw", name: "Copilot", url: "https://github.com/copilot" }
+        ]
       },
-      'f-learn': {
-        id: 'f-learn',
-        name: 'Aprendizado',
+
+      "i-ifi124p": {
         children: [],
+        id: "i-ifi124p",
+        name: "Serviços Docker",
+        parentId: "root",
         sites: [
-          { id: 's5', name: 'YouTube', url: 'https://youtube.com' },
-          { id: 's6', name: 'Coursera', url: 'https://coursera.org' }
+          { id: "i-y34x2es", name: "Plex", url: "http://localhost:32400/web/index.html#!/" },
+          { id: "i-nrui4qe", name: "SyncThing - Obsidian", url: "http://localhost:8384/" }
+        ]
+      },
+
+      "i-ujnhhmw": {
+        children: [],
+        id: "i-ujnhhmw",
+        name: "Dev Local",
+        parentId: "root",
+        sites: [
+          { id: "i-wfccqkm", name: "Supabase", url: "http://localhost:54323/project/default" },
+          { id: "i-ial24i6", name: "Next - Dashboard", url: "http://localhost:3000/dashboard" },
+          { id: "i-anpoqbv", name: "FastAPI - Docs", url: "http://localhost:8000/docs" }
+        ]
+      },
+
+      "root": {
+        children: [
+          "i-i58lz9x",
+          "i-ujnhhmw",
+          "i-ifi124p"
         ],
-        parentId: 'root'
+        id: "root",
+        name: "Root",
+        parentId: null,
+        sites: [
+          { id: "i-3dp0um4", name: "Git Projects", url: "https://github.com/projects" },
+          { id: "i-ylr4lfo", name: "Linkedin", url: "https://www.linkedin.com/feed/" }
+        ]
       }
     }
   };
 }
 
+function exportData() {
+  const json = JSON.stringify(state.data, null, 2);
+
+  const blob = new Blob([json], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'foldertab-backup.json';
+  a.click();
+
+  URL.revokeObjectURL(url);
+}
+
+
+function importData(json) {
+  try {
+    const data = JSON.parse(json);
+
+    if (!data || typeof data !== 'object') {
+      throw new Error('JSON inválido');
+    }
+
+    state.data = data;
+    saveData();
+    renderSidebar();
+    renderGrid();
+
+  } catch (err) {
+    alert('Erro ao importar JSON');
+  }
+}
+
+
+function handleFileUpload(file) {
+  const reader = new FileReader();
+
+  reader.onload = (e) => {
+    importData(e.target.result);
+  };
+
+  reader.readAsText(file);
+}
+
+
 // ── State ────────────────────────────────────────────
 const state = {
-  data: loadData(),
+  data: null,
   currentFolderId: 'root',
   searchQuery: '',
-  dragItem: null,        // { type, id, folderId }
-  ctxTarget: null,       // { type, id, folderId }
+  dragItem: null,
+  ctxTarget: null,
   modalCallback: null,
   selectedItems: []
 };
@@ -618,23 +685,37 @@ function promptNewFolder(parentId) {
 
 function promptConfig() {
   openModal('Import / Export', `
+    
     <div class="field-group">
-      <label>Nome</label>
-      <input id="s-name" class="field-input" placeholder="ex: GitHub" maxlength="60"/>
+      <button id="btn-export" class="field-input">📤 Exportar Backup</button>
     </div>
-    <div class="field-group">
-      <label>URL</label>
-      <input id="s-url" class="field-input" placeholder="https://..." type="url"/>
-    </div>
-  `, () => {
 
-    saveData();
+    <div class="field-group">
+      <label>Importar JSON</label>
+      <input type="file" id="import-file" accept="application/json" />
+    </div>
+
+  `, () => {
     closeModal();
-    renderGrid();
   });
+
+  setTimeout(() => {
+
+    // Click no EXPORTAR
+    document.getElementById('btn-export')
+      .addEventListener('click', exportData);
+
+    // IMPORTAR
+    document.getElementById('import-file')
+      .addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (file) handleFileUpload(file);
+      });
+
+  }, 50);
 }
 
-// button de exportar dados (JSON)
+// button para abrir modal de importar e exportar dados (JSON)
 document.getElementById('btn-config').addEventListener('click', () => promptConfig());
 
 
@@ -891,19 +972,9 @@ document.getElementById('items-grid').addEventListener('click', (e) => {
 });
 
 // ── Init ──────────────────────────────────────────────
-// Try to restore from chrome.storage
-if (typeof chrome !== 'undefined' && chrome.storage) {
-  chrome.storage.sync.get('foldertab', (result) => {
-    if (result.foldertab) {
-      state.data = result.foldertab;
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state.data));
-    }
-    boot();
-  });
-} else {
-  boot();
-}
-
-function boot() {
+async function boot() {
+  state.data = await loadData();
   navigateTo('root');
 }
+
+boot();
