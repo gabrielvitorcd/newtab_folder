@@ -1,7 +1,3 @@
-/* ═══════════════════════════════════════════════════
-   FolderTab — app.js
-   ═══════════════════════════════════════════════════ */
-
 // ── Storage helpers ──────────────────────────────────
 const STORAGE_KEY = 'foldertab_data';
 
@@ -73,6 +69,7 @@ const state = {
   dragItem: null,        // { type, id, folderId }
   ctxTarget: null,       // { type, id, folderId }
   modalCallback: null,
+  selectedItems: []
 };
 
 // ── Utilities ────────────────────────────────────────
@@ -231,6 +228,7 @@ function renderBreadcrumb() {
   const bc = document.getElementById('breadcrumb');
   bc.innerHTML = '';
   const path = getFolderPath(state.currentFolderId);
+
   path.forEach((f, i) => {
     if (i > 0) {
       const sep = document.createElement('span');
@@ -240,9 +238,13 @@ function renderBreadcrumb() {
     }
     const item = document.createElement('span');
     item.className = 'bc-item' + (i === path.length - 1 ? ' current' : '');
+
+    if (f.id === 'root') {
+      item.classList.add('bc-home');
+    }
     item.textContent = f.id === 'root' ? '⌂' : f.name;
-    if (i < path.length - 1) {
-      item.addEventListener('click', () => navigateTo(f.id));
+    if (f.id === 'root') {
+      item.addEventListener('click', () => navigateTo('root'));
     }
     bc.appendChild(item);
   });
@@ -308,8 +310,12 @@ function createFolderCard(folder) {
     <div class="item-label">${escHtml(folder.name)}</div>
   `;
 
-  el.addEventListener('dblclick', () => navigateTo(folder.id));
-  el.addEventListener('click', (e) => { e.stopPropagation(); selectItem(el); });
+  el.addEventListener('click', () => navigateTo(folder.id));
+  el.addEventListener('auxclick', (event) => {
+    if (event.button === 1) {
+      openAllTabsNewWindow(folder.id);
+    }
+  });
   el.addEventListener('contextmenu', (e) => {
     e.preventDefault();
     showCtxMenu(e, { type: 'folder', id: folder.id, folderId: folder.parentId });
@@ -362,7 +368,13 @@ function createSiteCard(site, folderId) {
   `;
 
   el.addEventListener('click', (e) => { e.stopPropagation(); selectItem(el); });
-  el.addEventListener('dblclick', () => window.open(site.url, '_blank'));
+  el.addEventListener('dblclick', () => window.open(site.url, '_self'));
+  el.addEventListener('auxclick', (event) => {
+    if (event.button === 1) {
+      window.open(site.url, '_blank');
+    }
+  });
+
   el.addEventListener('contextmenu', (e) => {
     e.preventDefault();
     showCtxMenu(e, { type: 'site', id: site.id, folderId });
@@ -380,9 +392,29 @@ function createSiteCard(site, folderId) {
   return el;
 }
 
+// Seleciona um item (para abrir múltiplos)
+
+function updateSelectedUrls() {
+  const selected = document.querySelectorAll('.grid-item.selected');
+
+  // pega URL correta usando folderId + siteId
+  const urls = Array.from(selected)
+    .map(el => {
+      const folderId = el.dataset.folderId;
+      const siteId = el.dataset.siteId;
+      const folder = state.data.folders[folderId];
+      if (!folder) return null;
+      const site = folder.sites.find(s => s.id === siteId);
+      return site?.url || null;
+    })
+    .filter(Boolean);
+
+  state.selectedUrls = urls;
+}
+
 function selectItem(el) {
-  document.querySelectorAll('.grid-item.selected').forEach(e => e.classList.remove('selected'));
   el.classList.add('selected');
+  updateSelectedUrls();
 }
 
 // ── Navigate ─────────────────────────────────────────
@@ -416,8 +448,17 @@ function openAllTabs(folderId) {
   urls.forEach(url => window.open(url, '_blank'));
 }
 
+function openSelectedLinksFromState() {
+  if (state.selectedUrls.length === 0) {
+    alert('Nenhum site selecionado.');
+    return;
+  }
 
-// ── Open All Tabs ─────────────────────────────────────
+  state.selectedUrls.forEach(url => window.open(url, '_blank'));
+}
+
+
+// ── Open All Tabs New Window ─────────────────────────────────────
 function openAllTabsNewWindow(folderId) {
   const f = state.data.folders[folderId];
   if (!f) return;
@@ -462,10 +503,6 @@ function showCtxMenu(e, target) {
   if (target.type === 'folder') {
     const isRoot = target.id === 'root';
 
-    addCtxItem('🗂️ Abrir pasta', () => navigateTo(target.id));
-    addCtxItem('🚀 Abrir todas as abas', () => openAllTabs(target.id));
-    addCtxItem('🚀 Abrir todas as abas em nova janela', () => openAllTabsNewWindow(target.id));
-    addCtxSep();
     addCtxItem('✏️ Renomear', () => promptRename(target.id));
     addCtxItem('📁 Nova subpasta', () => promptNewFolder(target.id));
     addCtxItem('🌐 Novo site aqui', () => promptNewSite(target.id));
@@ -576,6 +613,43 @@ function promptNewFolder(parentId) {
   });
 }
 
+
+// função para abrir modal de importar e exportar dados (JSON)
+
+function promptConfig() {
+  openModal('Import / Export', `
+    <div class="field-group">
+      <label>Nome</label>
+      <input id="s-name" class="field-input" placeholder="ex: GitHub" maxlength="60"/>
+    </div>
+    <div class="field-group">
+      <label>URL</label>
+      <input id="s-url" class="field-input" placeholder="https://..." type="url"/>
+    </div>
+  `, () => {
+    // let name = document.getElementById('s-name').value.trim();
+    // let url = document.getElementById('s-url').value.trim();
+    // if (!url) return;
+    // if (!url.startsWith('http')) url = 'https://' + url;
+    // if (!name) name = url;
+    // const site = { id: uid(), name, url };
+    // state.data.folders[folderId].sites.push(site);
+    saveData();
+    closeModal();
+    renderGrid();
+  });
+}
+
+// button de exportar dados (JSON)
+document.getElementById('btn-config').addEventListener('click', () => promptConfig());
+
+
+
+
+
+
+
+
 function promptRename(folderId) {
   const f = state.data.folders[folderId];
   if (!f || folderId === 'root') return;
@@ -684,7 +758,7 @@ function deleteSite(folderId, siteId) {
 document.getElementById('btn-add-site').addEventListener('click', () => promptNewSite(state.currentFolderId));
 document.getElementById('btn-add-subfolder').addEventListener('click', () => promptNewFolder(state.currentFolderId));
 document.getElementById('btn-new-root-folder').addEventListener('click', () => promptNewFolder('root'));
-document.getElementById('btn-open-all').addEventListener('click', () => openAllTabs(state.currentFolderId));
+document.getElementById('btn-open-all').addEventListener('click', () => openSelectedLinksFromState());
 
 // ── Drag & Drop ───────────────────────────────────────
 function showDragGhost(name) {
@@ -761,12 +835,11 @@ searchInput.addEventListener('input', () => {
   renderSearchResults(q);
 });
 
-// ⌘K shortcut
+
+// shortcut open selected tabs
 document.addEventListener('keydown', (e) => {
-  if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-    e.preventDefault();
-    searchInput.focus();
-    searchInput.select();
+  if (e.key === 'Enter') {
+    openSelectedLinksFromState()
   }
 });
 
