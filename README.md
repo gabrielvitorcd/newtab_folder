@@ -1,70 +1,106 @@
 # FolderTab
  
-> Sua nova aba. Seus sites. Do seu jeito.
+> Substitua sua nova aba por um painel de pastas inteligente. Abra conjuntos inteiros de sites com um clique.
+
+<img width="1920" height="1045" alt="image" src="https://github.com/user-attachments/assets/c48dc090-3bc1-47d8-88aa-ba8352e7f9ff" />
+
  
 ---
  
 ## O problema
  
-Você tem um conjunto de sites que abre toda vez que começa a trabalhar — GitHub, Linear, Notion, YouTube, o localhost do projeto. Todo dia, abre um por um. Na ordem errada. Esquece algum. Perde tempo.
+Todo desenvolvedor tem aquela rotina: abre o navegador, e começa a abrir site por site manualmente.
  
-Abas fixas? Confusão. Bookmarks do navegador? Planos demais, organização de menos.
+No meu caso eram dois contextos completamente diferentes dependendo do dia:
  
-**FolderTab resolve isso.**
+- **Modo faculdade** → portal da faculdade, Google Classroom, Drive, email institucional
+- **Modo desenvolvimento** → GitHub, Jira, localhost:3000, Figma, documentações
+Toda manhã, a mesma sequência repetitiva de cliques. Pequeno, mas irritante.
+ 
+O FolderTab nasceu disso.
  
 ---
  
 ## O que é
  
-Uma extensão Chrome que substitui a página de nova aba por um painel de atalhos organizados em **pastas hierárquicas**. Você monta uma estrutura que reflete o seu fluxo de trabalho e, quando precisar, abre tudo de uma vez — com um clique.
+Uma extensão Chrome que substitui a página de nova aba por um painel organizado em **pastas hierárquicas**. Cada pasta agrupa sites relacionados. Um clique abre todos de uma vez.
  
 ---
+## Features
  
-## Como funciona
+- 📂 **Pastas hierárquicas** — organize sites em contextos (Faculdade, Dev, Utils...)
+- ⚡ **Abrir tudo** — abre todas as abas de uma pasta com um clique
+- 🔍 **Busca rápida** — encontra qualquer site ou pasta instantaneamente
+- ⭐ **Acesso rápido** — fixe os sites mais usados no topo
+- 🕐 **Relógio** — exibe hora atual na interface
+- 💾 **Persistência local** — tudo salvo via `chrome.storage.sync`, sincroniza entre dispositivos
+- 🎨 **Tema escuro** — interface limpa, sem distrações
+
+---
+
+## Stack
  
-### Estrutura em pastas
+- **HTML + CSS + JavaScript puro** — sem frameworks, sem build tools
+- **Chrome Extension Manifest V3**
+- **`chrome.storage.sync`** — persistência nativa do Chrome
+- **Google Favicons API** — ícones automáticos para cada site
+> Decisão intencional: zero dependências. A extensão instala em segundos e nunca vai quebrar por causa de um `npm install` mal feito.
+
+---
  
-Organize seus sites em pastas e subpastas do jeito que faz sentido pra você:
+## Instalação
+
+### Via Chrome Web Store
+*(em breve)*
  
+### Manual (Developer Mode)
+ 
+```bash
+git clone https://github.com/gabrielvitorcd/newtab_folder
 ```
-Home
-├── 📁 DEV Plataforma
-│   ├── GitHub Projects
-│   └── Linear
-├── 📁 LocalHost
-│   └── localhost:3000
-├── 📁 IA
-│   ├── ChatGPT
-│   └── Claude
-└── 📁 Faculdade
-    └── Portal do Aluno
-```
  
-### Abrir tudo de uma vez
- 
-Clique com o botão do meio em qualquer pasta para abrir todos os sites dela em uma nova janela. Ou selecione sites individualmente e pressione `Enter`.
- 
-### Busca instantânea
- 
-Pressione qualquer tecla e comece a digitar — a busca filtra todos os seus sites em tempo real, mostrando o caminho completo da pasta.
- 
-### Relógio sempre visível
- 
-Horário e data no canto superior direito. Sem precisar olhar para a barra do sistema.
+1. Acesse `chrome://extensions/`
+2. Ative o **Modo desenvolvedor** (canto superior direito)
+3. Clique em **"Carregar sem compactação"**
+4. Selecione a pasta do projeto
+Pronto. Abra uma nova aba.
  
 ---
  
-## Funcionalidades
+## Como usar
  
-| Funcionalidade                        | Detalhe                                           |
-| ------------------------------------- | ------------------------------------------------- |
-| **Pastas hierárquicas**               | Estruture em quantos níveis precisar              |
-| **Abrir pasta inteira**               | Clique do meio abre todos os sites em nova janela |
-| **Multi-seleção + Enter**             | Selecione sites individuais e abra todos juntos   |
-| **Busca global**                      | Filtra por nome ou URL em toda a estrutura        |
-| **Menu de contexto**                  | Clique direito para editar, renomear ou deletar   |
-| **Sidebar com árvore**                | Navegação rápida por toda a hierarquia            |
-| **Persistência via `chrome.storage`** | Seus dados sincronizam entre dispositivos         |
-| **Favicon automático**                | Ícones carregados via Google Favicons API         |
+### Criar uma pasta
+Clique no `+` no painel lateral → dê um nome → adicione sites.
+ 
+### Abrir todos os sites de uma pasta
+Duas formas:
+- Selecione os sites desejados e clique em **"Abrir todas"** no canto da pasta
+- Clique na pasta com o **botão do scroll do mouse** para abrir tudo de uma vez
+ 
+### Acesso rápido
+Fixe qualquer site no topo para acessar sem navegar nas pastas.
+ 
+### Busca
+Clique na barra de busca → digite o nome do site ou pasta.
+
+---
+
+ 
+## Features Futuras Planejadas
+ 
+### 🔒 Pasta Segura
+Pastas protegidas com senha e criptografia via **Web Crypto API (AES-GCM)** — ideal para links sensíveis como internet banking, documentos fiscais ou ambientes de trabalho privados. Os dados são criptografados localmente no próprio browser, sem nenhum servidor envolvido.
+ 
+### 📸 Captura de Janela
+Um botão na extensão captura todas as abas abertas na janela atual (exceto a própria extensão) e cria automaticamente uma nova pasta com todos esses sites. Ideal para salvar um contexto de trabalho em andamento sem perder nenhuma aba.
+ 
  
 ---
+## Licença
+ 
+MIT — use, modifique, distribua.
+ 
+---
+ 
+*Feito por [Gabriel Vitor](https://github.com/gabrielvitorcd) — um problema do meu dia a dia virou um projeto de portfólio.*
+ 
