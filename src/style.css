@@ -24,8 +24,8 @@
   --folder: #f0a742;
   --radius: 10px;
   --radius-sm: 6px;
-  --mono: 'JetBrains Mono', monospace;
-  --sans: 'Syne', sans-serif;
+  --mono: "JetBrains Mono", monospace;
+  --sans: "Syne", sans-serif;
   --sidebar-w: 220px;
   --topbar-h: 58px;
 }
@@ -98,7 +98,9 @@ body {
   margin: 1px 6px;
   font-size: 12.5px;
   color: var(--text2);
-  transition: background 0.12s, color 0.12s;
+  transition:
+    background 0.12s,
+    color 0.12s;
   position: relative;
 }
 
@@ -348,7 +350,10 @@ kbd {
   cursor: pointer;
   background: var(--bg2);
   border: 1px solid var(--border);
-  transition: background 0.12s, border-color 0.12s, transform 0.1s;
+  transition:
+    background 0.12s,
+    border-color 0.12s,
+    transform 0.1s;
   position: relative;
   user-select: none;
   text-decoration: none;
@@ -371,7 +376,6 @@ kbd {
   grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
   gap: 12px;
 }
-
 
 .grid-item:hover {
   background: var(--bg3);
@@ -497,7 +501,9 @@ kbd {
   background: var(--bg2);
   border: 1px solid var(--border);
   cursor: pointer;
-  transition: background 0.12s, border-color 0.12s;
+  transition:
+    background 0.12s,
+    border-color 0.12s;
   text-decoration: none;
   color: inherit;
 }
@@ -537,7 +543,10 @@ kbd {
   font-size: 12px;
   font-family: var(--sans);
   cursor: pointer;
-  transition: background 0.12s, color 0.12s, border-color 0.12s;
+  transition:
+    background 0.12s,
+    color 0.12s,
+    border-color 0.12s;
 }
 
 .btn-ghost:hover {
@@ -559,11 +568,13 @@ kbd {
   font-family: var(--sans);
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.12s, transform 0.1s;
+  transition:
+    background 0.12s,
+    transform 0.1s;
 }
 
 .btn-primary:hover {
-  background: var(--accent2);
+  filter: brightness(70%);
 }
 
 .icon-btn {
@@ -577,7 +588,9 @@ kbd {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: background 0.12s, color 0.12s;
+  transition:
+    background 0.12s,
+    color 0.12s;
 }
 
 .icon-btn:hover {
@@ -610,7 +623,9 @@ kbd {
   align-items: center;
   gap: 8px;
   color: var(--text2);
-  transition: background 0.1s, color 0.1s;
+  transition:
+    background 0.1s,
+    color 0.1s;
 }
 
 #ctx-list li:hover {

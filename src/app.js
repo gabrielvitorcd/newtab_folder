@@ -570,6 +570,8 @@ function showCtxMenu(e, target) {
   if (target.type === 'folder') {
     const isRoot = target.id === 'root';
 
+    addCtxItem('🚀 Abrir todas as abas', () => openAllTabs(target.id));
+    addCtxItem('🚀 Abrir todas as abas em nova janela', () => openAllTabsNewWindow(target.id));
     addCtxItem('✏️ Renomear', () => promptRename(target.id));
     addCtxItem('📁 Nova subpasta', () => promptNewFolder(target.id));
     addCtxItem('🌐 Novo site aqui', () => promptNewSite(target.id));
